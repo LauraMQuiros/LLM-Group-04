@@ -9,7 +9,7 @@ in your terminal, where directory is the name of the folder you want to give to 
 To activate, type 
 `source <directory>/bin/activate`
 if in linux or macOS or 
-````
+```shell
 # In cmd.exe
 venv\Scripts\activate.bat
 # In PowerShell
