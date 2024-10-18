@@ -3,6 +3,8 @@ import pandas as pd
 import os
 from transformers import GPT2Tokenizer
 import torch
+from src.data_processing.Formality_Transfer_Dataset import FormalityTransferDataset
+import pickle
 
 # Defining constants
 # Parameters
@@ -50,12 +52,15 @@ def check_gpu_availability():
     return device
 
 
+# Adding prefix tokens for the formal and informal datasets
 def tokenizing(tokenizer, data, split):
     tokenizer.add_tokens(['<|formal|>', '<|informal|>'])
-    # Add prefixes to all contexts and targets to indicate the style of the given sentence
+
+    # Add prefixes to all input sentences and targets to indicate the style of the given sentence
     data['input_sentence'] = data['input_sentence'].apply(lambda x: PREFIX_INFORMAL + x)
     data['label'] = data['label'].apply(lambda x: PREFIX_FORMAL + x)
 
+    # tokenization of the input sequences and the labels
     model_inputs = tokenizer(data['input_sentence'].tolist(), max_length=MAX_INPUT_LEN, truncation=True, padding=True,
                              return_tensors='pt')
     targets = tokenizer(data['label'].tolist(), max_length=MAX_INPUT_LEN, truncation=True, padding=True,
@@ -66,16 +71,19 @@ def tokenizing(tokenizer, data, split):
         'input_ids': model_inputs['input_ids'],
         'attention_mask': model_inputs['attention_mask'],
         'labels': targets['input_ids'],
-        'decoder_attention_mask': targets['attention_mask']
+        'decoder_attention_mask': targets['attention_mask'],
     }
 
     print(len(model_inputs['input_ids']), len(targets['input_ids']))
 
-    # data_processed_df=pd.DataFrame(data_processed)
-    # data_processed_df.save_to_disk(f'{type}_processed_dataset')
+    # Converting the processed data into an instance of the Dataset class to prepare for training
+    dataset_processed = FormalityTransferDataset(data_processed)
 
-    # Returning the data in a dictionary format, as expected by the GPT2
-    return data_processed
+    # Pickling the tokenized dataset to avoid pre-processing multiple times
+    with open(f'{split}_dataset_processed.pkl', 'wb') as f:
+        pickle.dump(dataset_processed, f)
+
+    return dataset_processed
 
 
 def main():
@@ -89,13 +97,10 @@ def main():
                                               bos_token='<|startoftext|>', eos_token='<|endoftext|>',
                                               pad_token='<|pad|>')
 
+    # Tokenizing the train, tune and test splits
     tokenized_train = tokenizing(tokenizer, train, "train")
     tokenized_tune = tokenizing(tokenizer, tune, "tune")
     tokenized_test = tokenizing(tokenizer, test, "test")
-
-    tokenized_test.save_to_disk("processed_data")
-
-    print(tokenized_tune)
 
 
 if __name__ == "__main__":
