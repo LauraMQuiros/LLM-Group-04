@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSe
 dataset_path = "data/processed/Entertainment_Music/train/formal"
 tokenised_dataset_path = "data/processed/Entertainment_Music/train/tokenised_formal"
 dataset = torch.load(dataset_path)
-tokenized_dataset = torch.load(tokenised_dataset_path)
+tokenized_dataset : dict = torch.load(tokenised_dataset_path)
 model_id = "chatgpt-2"
 
 # model loading and training
