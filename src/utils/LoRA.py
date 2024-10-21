@@ -118,17 +118,17 @@ trainer.model.base_model.save_pretrained(peft_model_id)
 peft_model_id = "path_to_trained_model"
 config = PeftConfig.from_pretrained(peft_model_id)
 
-# load base LLM model and tokenizer
-model = AutoModelForCausalLM.from_pretrained(config.base_model_name_or_path, device_map={"":0})
+# Load base LLM model and tokenizer (on CPU)
+model = AutoModelForCausalLM.from_pretrained(config.base_model_name_or_path, device_map={"": "cpu"})
 tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
 
-# Load the Lora model
-model = PeftModel.from_pretrained(model, peft_model_id, device_map={"":0})
+# Load the LoRA model (on CPU)
+model = PeftModel.from_pretrained(model, peft_model_id, device_map={"": "cpu"})
 model.eval()
 
 print("Peft model loaded")
 
-# use the first sample of the test set
+# Use the first sample of the test set
 try:
     sample = small_dataset['test'][0]
 except KeyError as e:
@@ -136,9 +136,12 @@ except KeyError as e:
 except IndexError as e:
     print(f"IndexError: {e} - Ensure there are samples in 'test'.")
 
-input_ids = tokenizer(sample["dialogue"], return_tensors="pt", truncation=True).input_ids.cuda()
-# with torch.inference_mode():
-outputs = model.generate(input_ids=input_ids, max_new_tokens=10, do_sample=True, top_p=0.9)
-print(f"input sentence: {sample['dialogue']}\n{'---'* 20}")
+# Move the input_ids to CPU (remove .cuda() since it's not needed)
+input_ids = tokenizer(sample["dialogue"], return_tensors="pt", truncation=True).input_ids
 
+# Generate outputs
+outputs = model.generate(input_ids=input_ids, max_new_tokens=10, do_sample=True, top_p=0.9)
+
+# Print the input sentence and the generated summary
+print(f"input sentence: {sample['dialogue']}\n{'---'* 20}")
 print(f"summary:\n{tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0]}")

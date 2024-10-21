@@ -23,3 +23,18 @@ However, for the usage of LoRA you will need to install the package from the sou
 ```bash
 !pip install -q git+https://github.com/huggingface/peft
 ```
+
+## Running the sections
+
+To run the tokenisation
+```bash
+!python src/data_processing/data_preprocessing.py
+```
+This step should fill the folder data/processed with three files: `test_dataset_processed.csv`, `train_dataset_processed.csv` and `val_dataset_processed.csv`.
+
+There are two types of tuning that can be done: hyperparameter tuning and parameter-efficient hyperparameter tuning.
+To run the LoRA model you need to be at the root of the repository and run the following command in terminal (not IDE):
+```bash
+!python src/utils/LoRA.py
+```
+This should make a folder `logs` with the results of the training.
