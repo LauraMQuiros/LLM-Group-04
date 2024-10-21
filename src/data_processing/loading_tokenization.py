@@ -20,8 +20,8 @@ def establish_data_path():
     path = os.getcwd()
 
     # If you want to run the file specifically from this file, uncomment the two lines below
-    path = os.path.abspath(os.path.join(path, os.pardir))
-    path = os.path.abspath(os.path.join(path, os.pardir))
+    #path = os.path.abspath(os.path.join(path, os.pardir))
+    #path = os.path.abspath(os.path.join(path, os.pardir))
     path = os.path.join(path, 'data/raw/GYAFC_Corpus')
     print(path)
     return path
