@@ -18,8 +18,10 @@ MAX_TARGET_LEN = 128
 # Establishing the directory where the script is executed and constructing the path of the dataset
 def establish_data_path():
     path = os.getcwd()
-    path = os.path.abspath(os.path.join(path, os.pardir))
-    path = os.path.abspath(os.path.join(path, os.pardir))
+
+    # If you want to run the file specifically from this file, uncomment the two lines below
+    #path = os.path.abspath(os.path.join(path, os.pardir))
+    #path = os.path.abspath(os.path.join(path, os.pardir))
     path = os.path.join(path, 'data/raw/GYAFC_Corpus')
     print(path)
     return path
