@@ -166,3 +166,6 @@ cython_debug/
 
 # ignore data since we cannot put it out
 data/raw/
+data/processed/
+tutorial/
+logs/
