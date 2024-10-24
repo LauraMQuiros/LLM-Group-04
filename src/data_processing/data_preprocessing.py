@@ -1,16 +1,21 @@
 import csv
 import pandas as pd
 import os
+import sys
 from transformers import GPT2Tokenizer
 import torch
-from FormalityTransferDataset import FormalityTransferDataset
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Add the project root to sys.path (assuming src is in the root directory)
+project_root = os.path.abspath(os.path.join(current_dir, os.pardir, os.pardir))
+sys.path.append(project_root)
+from src.data_processing.FormalityTransferDataset import FormalityTransferDataset
 import pickle
 
 # Defining constants
 # Parameters
 MODEL_CHECKPOINT = 'gpt2-medium'
-PREFIX_FORMAL = '<|formal|>'
-PREFIX_INFORMAL = '<|informal|>'
+PREFIX_FORMAL = '[Formal]'
+PREFIX_INFORMAL = '[Informal]'
 MAX_INPUT_LEN = 2048
 MAX_TARGET_LEN = 128
 
@@ -18,8 +23,9 @@ MAX_TARGET_LEN = 128
 # Establishing the directory where the script is executed and constructing the path of the dataset
 def establish_data_path():
     path = os.getcwd()
-    #path = os.path.abspath(os.path.join(path, os.pardir))
-    #path = os.path.abspath(os.path.join(path, os.pardir))
+    # If you want to run the file specifically from this file, uncomment the two lines below
+    # path = os.path.abspath(os.path.join(path, os.pardir))
+    # path = os.path.abspath(os.path.join(path, os.pardir))
     path = os.path.join(path, 'data/raw/GYAFC_Corpus')
     print(path)
     return path
@@ -31,17 +37,17 @@ def load_train_tune_test(theme, path):
     formal_train = pd.read_table(path + f'/{theme}/train/formal', names=['label'], header=None, quoting=csv.QUOTE_NONE)
     informal_train = pd.read_table(path + f'/{theme}/train/informal', names=['input_sentence'], header=None,
                                    quoting=csv.QUOTE_NONE)
-    train = pd.concat([informal_train, formal_train], axis=1)
+    train = pd.DataFrame(PREFIX_INFORMAL + informal_train['input_sentence'] + PREFIX_FORMAL + formal_train['label'])
 
     formal_tune = pd.read_table(path + f'/{theme}/tune/formal', names=['label'], header=None, quoting=csv.QUOTE_NONE)
     informal_tune = pd.read_table(path + f'/{theme}/tune/informal.ref0', names=['input_sentence'], header=None,
                                   quoting=csv.QUOTE_NONE)
-    tune = pd.concat([informal_tune, formal_tune], axis=1)
+    tune = pd.DataFrame(PREFIX_INFORMAL + informal_tune['input_sentence'] + PREFIX_FORMAL + formal_tune['label'])
 
     formal_test = pd.read_table(path + f'/{theme}/test/formal', names=['label'], header=None, quoting=csv.QUOTE_NONE)
     informal_test = pd.read_table(path + f'/{theme}/test/informal.ref0', names=['input_sentence'], header=None,
                                   quoting=csv.QUOTE_NONE)
-    test = pd.concat([informal_test, formal_test], axis=1)
+    test = pd.DataFrame(PREFIX_INFORMAL + informal_test['input_sentence'] + PREFIX_FORMAL + formal_test['label'])
 
     return train, tune, test
 
@@ -53,34 +59,35 @@ def check_gpu_availability():
 
 
 # Adding prefix tokens for the formal and informal datasets
-def tokenizing(tokenizer, data, split):
-    tokenizer.add_tokens(['<|formal|>', '<|informal|>'])
-
-    # Add prefixes to all input sentences and targets to indicate the style of the given sentence
-    data['input_sentence'] = data['input_sentence'].apply(lambda x: PREFIX_INFORMAL + x)
-    data['label'] = data['label'].apply(lambda x: PREFIX_FORMAL + x)
-
-    # tokenization of the input sequences and the labels
-    model_inputs = tokenizer(data['input_sentence'].tolist(), max_length=MAX_INPUT_LEN, truncation=True, padding=True,
-                             return_tensors='pt')
-    targets = tokenizer(data['label'].tolist(), max_length=MAX_INPUT_LEN, truncation=True, padding=True,
-                        return_tensors='pt')
+def tokenizing(tokenizer, data, split, theme):
+    # tokenization of the conjoined input formal sequences and their formal targets
+    formal_informal_conjoined = tokenizer(data.iloc[:, 0].tolist(), max_length=MAX_INPUT_LEN, truncation=True,
+                                          padding=True,
+                                          return_tensors='pt')
 
     # Converting the processed data into a dictionary
     data_processed = {
-        'input_ids': model_inputs['input_ids'],
-        'attention_mask': model_inputs['attention_mask'],
-        'labels': targets['input_ids'],
-        'decoder_attention_mask': targets['attention_mask'],
-    }
+        'input_ids': formal_informal_conjoined['input_ids'],
+        'attention_mask': formal_informal_conjoined['attention_mask']
 
-    print(len(model_inputs['input_ids']), len(targets['input_ids']))
+    }
 
     # Converting the processed data into an instance of the Dataset class to prepare for training
     dataset_processed = FormalityTransferDataset(data_processed)
 
+    # Getting the current directory and move up two levels to reach the project root
+    #project_root = os.path.abspath(os.path.join(os.getcwd(), '..', '..'))
+    project_root = os.getcwd()
+    # Appending the correct data path
+    save_path = os.path.join(project_root, 'data', 'processed')
+
+    # Checking if the directory exists, and if not, create it
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
     # Pickling the tokenized dataset to avoid pre-processing multiple times
-    with open(f'data/processed/{split}_dataset_processed.pkl', 'wb') as f:
+    final_used_path = os.path.join(save_path, f'{theme}_{split}_dataset_processed.pkl')
+    print(final_used_path)
+    with open(final_used_path, 'wb') as f:
         pickle.dump(dataset_processed, f)
 
     return dataset_processed
@@ -92,15 +99,25 @@ def main():
 
     train, tune, test = load_train_tune_test('Entertainment_Music', data_path)
 
-    # Initializing the tokenizer
+    # Initializiing the tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained(MODEL_CHECKPOINT,
                                               bos_token='<|startoftext|>', eos_token='<|endoftext|>',
                                               pad_token='<|pad|>')
+    tokenizer.add_tokens([PREFIX_FORMAL, PREFIX_INFORMAL])
+
+    # save tokeniser to data/processed
+    project_root = os.getcwd()
+    save_path = os.path.join(project_root, 'src', 'models', 'tokenizer')
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    # pickle tokenizer
+    with open(os.path.join(save_path, 'tokenizer.pkl'), 'wb') as f:
+        pickle.dump(tokenizer, f)
 
     # Tokenizing the train, tune and test splits
-    tokenized_train = tokenizing(tokenizer, train, "train")
-    tokenized_tune = tokenizing(tokenizer, tune, "tune")
-    tokenized_test = tokenizing(tokenizer, test, "test")
+    tokenized_train_ent = tokenizing(tokenizer, train, "train", "entertainment")
+    tokenized_tune_ent = tokenizing(tokenizer, tune, "tune", "entertainment")
+    tokenized_test_ent = tokenizing(tokenizer, test, "test", "entertainment")
 
 
 if __name__ == "__main__":

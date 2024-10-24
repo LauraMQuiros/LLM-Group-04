@@ -4,17 +4,22 @@ import sys
 from peft import get_peft_model, LoraConfig, PeftModel, PeftConfig
 import torch
 import pickle
-from transformers import AutoTokenizer, AutoModelForCausalLM, DataCollatorForLanguageModeling, Trainer, TrainingArguments
+from transformers import AutoModelForCausalLM, DataCollatorForLanguageModeling, Trainer, TrainingArguments, GPT2Tokenizer
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Add the project root to sys.path (assuming src is in the root directory)
 project_root = os.path.abspath(os.path.join(current_dir, os.pardir, os.pardir))
 sys.path.append(project_root)
 from src.data_processing.FormalityTransferDataset import FormalityTransferDataset
 
+MODEL_CHECKPOINT = 'gpt2-medium'
+PREFIX_FORMAL = '[Formal]'
+PREFIX_INFORMAL = '[Informal]'
+
 # paths
-test_path = os.path.join(os.getcwd(), 'data/processed/test_dataset_processed.pkl')
-train_path = os.path.join(os.getcwd(), 'data/processed/train_dataset_processed.pkl')
-tune_path = os.path.join(os.getcwd(), 'data/processed/tune_dataset_processed.pkl')
+test_path = os.path.join(os.getcwd(), 'data/processed/entertainment_test_dataset_processed.pkl')
+train_path = os.path.join(os.getcwd(), 'data/processed/entertainment_train_dataset_processed.pkl')
+tune_path = os.path.join(os.getcwd(), 'data/processed/entertainment_tune_dataset_processed.pkl')
+tokeniser_path = os.path.join(os.getcwd(), 'src/models/tokenizer/tokenizer.pkl')
 sys.path.append(os.path.join(os.getcwd(), 'src/data_processing'))
 #print(sys.path)
 
@@ -25,7 +30,8 @@ with open(train_path, 'rb') as f:
     train : FormalityTransferDataset = pickle.load(f)
 with open(tune_path, 'rb') as f:
     tune : FormalityTransferDataset = pickle.load(f)
-
+with open(tokeniser_path, 'rb') as f:
+    tokenizer : GPT2Tokenizer = pickle.load(f)
 
 tokenized_dataset = {
     'train': train,
@@ -39,18 +45,11 @@ small_dataset = {
     'tune': tune.get_slice(0, 100)
 }
 
-model_id = "gpt2-medium"
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-
-# Add special tokens
-tokenizer.add_special_tokens({
-    'pad_token': '[PAD]',
-    'bos_token': '[FORMAL]',
-    'eos_token': '[INFORMAL]'
-})
+print(f"The lengths of each of the small dataset sections are: {len(small_dataset['train'])} for the train, "
+      f"{len(small_dataset['test'])} for the test and {len(small_dataset['tune'])} for the tune.")
 
 # Load and resize the model to accommodate new tokens
-model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
+model = AutoModelForCausalLM.from_pretrained(MODEL_CHECKPOINT, device_map="auto")
 model.resize_token_embeddings(len(tokenizer))
 
 # Define LoRA Config
@@ -108,22 +107,22 @@ model.config.use_cache = False
 trainer.train()
 
 # Save our LoRA model & tokenizer results
-peft_model_id="path_to_trained_model"
-trainer.model.save_pretrained(peft_model_id)
-tokenizer.save_pretrained(peft_model_id)
+trainer_model_id="models/trainer"
+tokenizer_model_id="models/tokenizer"
+trainer.model.save_pretrained(trainer_model_id)
+tokenizer.save_pretrained(tokenizer_model_id)
 # if you want to save the base model to call
-trainer.model.base_model.save_pretrained(peft_model_id)
+trainer.model.base_model.save_pretrained(trainer_model_id)
 
 # Load peft config for pre-trained checkpoint etc.
-peft_model_id = "path_to_trained_model"
-config = PeftConfig.from_pretrained(peft_model_id)
+config = PeftConfig.from_pretrained(trainer_model_id)
 
 # Load base LLM model and tokenizer (on CPU)
 model = AutoModelForCausalLM.from_pretrained(config.base_model_name_or_path, device_map={"": "cpu"})
-tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
+tokenizer = GPT2Tokenizer.from_pretrained(config.base_model_name_or_path)
 
 # Load the LoRA model (on CPU)
-model = PeftModel.from_pretrained(model, peft_model_id, device_map={"": "cpu"})
+model = PeftModel.from_pretrained(model, trainer_model_id, device_map={"": "cpu"})
 model.eval()
 
 print("Peft model loaded")
