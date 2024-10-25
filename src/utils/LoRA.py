@@ -107,40 +107,12 @@ model.config.use_cache = False
 trainer.train()
 
 # Save our LoRA model & tokenizer results
-trainer_model_id="models/trainer"
-tokenizer_model_id="models/tokenizer"
-trainer.model.save_pretrained(trainer_model_id)
-tokenizer.save_pretrained(tokenizer_model_id)
-# if you want to save the base model to call
-trainer.model.base_model.save_pretrained(trainer_model_id)
+lora_model_dir = "src/models/lora_trained"
+base_model_dir = "src/models/base_model"
+tokenizer_dir = "src/models/trained_tokenizer"
 
-# Load peft config for pre-trained checkpoint etc.
-config = PeftConfig.from_pretrained(trainer_model_id)
+trainer.model.save_pretrained(lora_model_dir)
+tokenizer.save_pretrained(tokenizer_dir)
+trainer.model.base_model.save_pretrained(base_model_dir)
 
-# Load base LLM model and tokenizer (on CPU)
-model = AutoModelForCausalLM.from_pretrained(config.base_model_name_or_path, device_map={"": "cpu"})
-tokenizer = GPT2Tokenizer.from_pretrained(config.base_model_name_or_path)
-
-# Load the LoRA model (on CPU)
-model = PeftModel.from_pretrained(model, trainer_model_id, device_map={"": "cpu"})
-model.eval()
-
-print("Peft model loaded")
-
-# Use the first sample of the test set
-try:
-    sample = small_dataset['test'][0]
-except KeyError as e:
-    print(f"KeyError: {e} - Ensure 'test' exists in the dataset.")
-except IndexError as e:
-    print(f"IndexError: {e} - Ensure there are samples in 'test'.")
-
-# Move the input_ids to CPU (remove .cuda() since it's not needed)
-input_ids = tokenizer(sample["dialogue"], return_tensors="pt", truncation=True).input_ids
-
-# Generate outputs
-outputs = model.generate(input_ids=input_ids, max_new_tokens=10, do_sample=True, top_p=0.9)
-
-# Print the input sentence and the generated summary
-print(f"input sentence: {sample['dialogue']}\n{'---'* 20}")
-print(f"summary:\n{tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0]}")
+print("Training complete. Model saved.")
