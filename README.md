@@ -30,3 +30,6 @@ To run the tokenisation
 ```bash
 !python src/data_processing/data_preprocessing.py
 ```
+This will output three files in the `data/processed` folder: 
+`Entertainment_test.csv`, `Entertainment_train.csv`, and `Entertainment_val.csv`.
+Besides, we will also save the tokeniser in `models/tokeniser/tokeniser.pkl`.

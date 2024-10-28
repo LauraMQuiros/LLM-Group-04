@@ -1,10 +1,17 @@
 import csv
 import pandas as pd
 import os
+import sys
 from transformers import GPT2Tokenizer
 import torch
-from src.data_processing.Formality_Transfer_Dataset import FormalityTransferDataset
 import pickle
+
+# needed to import the FormalityTransferDataset class from the src.data_processing.Formality_Transfer_Dataset module
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, os.pardir, os.pardir))
+sys.path.append(project_root)
+
+from src.data_processing.Formality_Transfer_Dataset import FormalityTransferDataset
 
 # Defining constants
 # Parameters
@@ -19,7 +26,7 @@ MAX_TARGET_LEN = 128
 def establish_data_path():
     path = os.getcwd()
 
-    # If you want to run the file specifically from this file, uncomment the two lines below
+    # If you want to run the file specifically from this file path instead of root, uncomment the two lines below
     # path = os.path.abspath(os.path.join(path, os.pardir))
     # path = os.path.abspath(os.path.join(path, os.pardir))
     path = os.path.join(path, 'data/raw/GYAFC_Corpus')
@@ -76,8 +83,7 @@ def tokenizing(tokenizer, data, split, theme):
     dataset_processed = FormalityTransferDataset(data_processed)
 
     # Getting the current directory and move up two levels to reach the project root
-    project_root = os.path.abspath(os.path.join(os.getcwd(), '..', '..'))
-
+    project_root = os.getcwd()
     # Appending the correct data path
     save_path = os.path.join(project_root, 'data', 'processed')
 
@@ -85,7 +91,7 @@ def tokenizing(tokenizer, data, split, theme):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     # Pickling the tokenized dataset to avoid pre-processing multiple times
-    with open(os.path.join(save_path, f'{theme}_{split}_dataset_processed.pkl'), 'wb') as f:
+    with open(os.path.join(save_path, f'{theme}_{split}.pkl'), 'wb') as f:
         pickle.dump(dataset_processed, f)
 
     return dataset_processed
@@ -101,6 +107,15 @@ def main():
     tokenizer = GPT2Tokenizer.from_pretrained(MODEL_CHECKPOINT,
                                               bos_token='<|startoftext|>', eos_token='<|endoftext|>',
                                               pad_token='<|pad|>')
+
+    # save tokeniser to src/models/tokenizer
+    project_root = os.getcwd()
+    save_path = os.path.join(project_root, 'src', 'models', 'tokenizer')
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    # pickle tokenizer
+    with open(os.path.join(save_path, 'tokenizer.pkl'), 'wb') as f:
+        pickle.dump(tokenizer, f)
 
     # Tokenizing the train, tune and test splits
     tokenized_train_ent = tokenizing(tokenizer, train, "train", "entertainment")
