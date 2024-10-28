@@ -104,8 +104,11 @@ def tokenizing(tokenizer, data, split):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     # Pickling the tokenized dataset to avoid pre-processing multiple times
+
     with open(os.path.join(save_path, f'{split}.pkl'), 'wb') as f:
-        pickle.dump(dataset_processed, f)
+
+   
+ 
 
     return dataset_processed
 
@@ -118,6 +121,7 @@ def main():
     train_ent, tune_ent, test_ent = load_train_tune_test('Entertainment_Music', data_path)
 
 
+
     train=mix_music_relationship_datasets(train_ent, train_rel)
     tune=mix_music_relationship_datasets(tune_ent, tune_rel)
     test=mix_music_relationship_datasets(test_ent, test_rel)
@@ -127,9 +131,9 @@ def main():
                                               bos_token='<|startoftext|>', eos_token='<|endoftext|>',
                                               pad_token='<|pad|>')
 
+
     # Adding the tokens to the model, so it knows to treat them as special tokens
     tokenizer.add_tokens([PREFIX_FORMAL, PREFIX_INFORMAL])
-
 
     # save tokeniser to src/models/tokenizer
     project_root = os.getcwd()
@@ -137,6 +141,7 @@ def main():
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
+        
     # pickle tokenizer
     with open(os.path.join(save_path, 'tokenizer.pkl'), 'wb') as f:
         pickle.dump(tokenizer, f)
