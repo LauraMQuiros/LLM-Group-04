@@ -11,13 +11,7 @@ class FormalityTransferDataset(Dataset):
         return len(self.input_ids)  # Number of samples
 
     def __getitem__(self, idx):
-        if isinstance(idx, slice):  # Handle slicing
-            return {
-                'input_ids': torch.tensor(self.input_ids[idx], dtype=torch.long),
-                'attention_mask': torch.tensor(self.attention_mask[idx], dtype=torch.long)
-            }
-        else:  # Handle single index
-            return {
+        return {
                 'input_ids': torch.tensor(self.input_ids[idx], dtype=torch.long),
                 'attention_mask': torch.tensor(self.attention_mask[idx], dtype=torch.long)
             }
