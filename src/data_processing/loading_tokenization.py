@@ -103,7 +103,7 @@ def main():
 
     train, tune, test = load_train_tune_test('Entertainment_Music', data_path)
 
-    # Initializiing the tokenizer
+    # Initializing the tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained(MODEL_CHECKPOINT,
                                               bos_token='<|startoftext|>', eos_token='<|endoftext|>',
                                               pad_token='<|pad|>')
