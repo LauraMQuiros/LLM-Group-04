@@ -18,4 +18,15 @@ venv\Scripts\Activate.ps1
 if in windows.
 
 To install all the requirements type 
-`pip install -r requirements.txt`
+`pip install -r requirements.txt`.
+However, for the usage of LoRA you will need to install the package from the source. To do so, type
+```bash
+!pip install -q git+https://github.com/huggingface/peft
+```
+
+## Running the sections
+
+To run the tokenisation
+```bash
+!python src/data_processing/data_preprocessing.py
+```
