@@ -20,8 +20,8 @@ def establish_data_path():
     path = os.getcwd()
 
     # If you want to run the file specifically from this file, uncomment the two lines below
-    # path = os.path.abspath(os.path.join(path, os.pardir))
-    # path = os.path.abspath(os.path.join(path, os.pardir))
+    path = os.path.abspath(os.path.join(path, os.pardir))
+    path = os.path.abspath(os.path.join(path, os.pardir))
     path = os.path.join(path, 'data/raw/GYAFC_Corpus')
     print(path)
     return path
@@ -106,6 +106,8 @@ def main():
     tokenized_train_ent = tokenizing(tokenizer, train, "train", "entertainment")
     tokenized_tune_ent = tokenizing(tokenizer, tune, "tune", "entertainment")
     tokenized_test_ent = tokenizing(tokenizer, test, "test", "entertainment")
+
+
 
 
 if __name__ == "__main__":
