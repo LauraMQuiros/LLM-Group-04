@@ -28,17 +28,9 @@ model.resize_token_embeddings(len(tokenizer))
 
 tokenizer.add_tokens(['[Formal]', '[Informal]'])
 model.resize_token_embeddings(len(tokenizer))
-
-
 data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
-
-
-tune_path = os.path.join(os.getcwd(), 'entertainment_tune_dataset_processed.pkl')
-#sys.path.append(os.path.join(os.getcwd(), 'src\data_processing'))
-
-train_path = os.path.join(os.getcwd(), 'entertainment_train_dataset_processed.pkl')
-#sys.path.append(os.path.join(os.getcwd(), 'src\data_processing'))
-# this or a variant of it adds the folder to the python path and allows to access src as a python module
+train_path = os.path.join(os.getcwd(), 'data/processed/entertainment_train_dataset.pkl')
+tune_path = os.path.join(os.getcwd(), 'data/processed/entertainment_tune_dataset.pkl')
 
 # Load datasets
 with open(tune_path, 'rb') as f:
@@ -52,13 +44,6 @@ small_dataset = {
      'tune': tune.get_slice(0, 50)
 }
 
-# #Load the datasets
-# with open('train_dataset_processed.pkl', 'rb') as f:
-#     train_dataset = pickle.load(f)
-#
-# with open('tune_dataset_processed.pkl', 'rb') as g:
-#     tune_dataset = pickle.load(g)
-
 # Define training arguments
 training_args = TrainingArguments(
     output_dir='./results_formalitytransfer',  # Output directory
@@ -67,8 +52,8 @@ training_args = TrainingArguments(
     save_steps=10_000,                          # Save checkpoint every 10,000 steps
     save_total_limit=2,                         # Only keep the last 2 checkpoints
     logging_dir='./logs',                       # Directory for storing logs
-    logging_steps=300,                          # Log every 500 steps
-    eval_steps=300,                             # Evaluate every 500 steps
+    logging_steps=300,                          # Log every 300 steps
+    eval_steps=300,                             # Evaluate every 300 steps
     evaluation_strategy="steps",                # Evaluate at the end of each step
 )
 
@@ -99,15 +84,15 @@ trainer = Trainer(
 trainer.train()
 
 # Save the trained model
-model.save_pretrained('./fine_tuned_gpt2_formalitytransfer')
-tokenizer.save_pretrained('./fine_tuned_gpt2_formalitytransfer')
+model.save_pretrained(os.path.join(os.getcwd(), 'src/models/fine_tuned_gpt2_formalitytransfer'))
+tokenizer.save_pretrained(os.path.join(os.getcwd(), 'src/models/fine_tuned_gpt2_formalitytransfer'))
 
 #Save loss data
 loss_data = pd.DataFrame({
     'training_loss': training_loss,
     'validation_loss': validation_loss[:len(training_loss)]  # Ensure same length
 })
-loss_data.to_csv('loss_data.csv', index=False)
+loss_data.to_csv(os.path.join(os.getcwd(), 'utils/loss_data.png', index=False)
 
 # Plot the training and validation loss
 plt.figure(figsize=(10, 5))
@@ -117,5 +102,5 @@ plt.xlabel('Steps')
 plt.ylabel('Loss')
 plt.legend()
 plt.title('Training and Validation Loss')
-plt.savefig('loss_plot.png')
+plt.savefig(os.path.join(os.getcwd(), 'images/loss_plot.png'))
 plt.show()
