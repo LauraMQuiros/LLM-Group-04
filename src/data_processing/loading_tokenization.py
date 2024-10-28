@@ -84,6 +84,8 @@ def tokenizing(tokenizer, data, split, theme):
 
     # Getting the current directory and move up two levels to reach the project root
     project_root = os.getcwd()
+    # if you want to run it from this file path, uncomment the line below
+    # project_root = os.path.abspath(os.path.join(project_root, os.pardir, os.pardir))
     # Appending the correct data path
     save_path = os.path.join(project_root, 'data', 'processed')
 
