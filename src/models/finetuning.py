@@ -4,7 +4,6 @@ import json
 import os
 import sys
 import pandas as pd
-from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data.dataset import Dataset
 import matplotlib.pyplot as plt
@@ -18,10 +17,11 @@ from src.data_processing.Formality_Transfer_Dataset import FormalityTransferData
 # Load model directly
 model_id = "gpt2-medium"
 tokenizer = AutoTokenizer.from_pretrained(model_id)
+
 tokenizer.add_special_tokens({
-    'pad_token': '[PAD]',
-    'bos_token': '[FORMAL]',
-    'eos_token': '[INFORMAL]',
+    'eos_token': '<|endoftext|>',  # Custom EOS token
+    'bos_token': '<|startoftext|>',  # Custom BOS token
+    'pad_token': '<|pad|>'  # Padding token
 })
 model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto")
 model.resize_token_embeddings(len(tokenizer))
@@ -62,7 +62,7 @@ small_dataset = {
 # Define training arguments
 training_args = TrainingArguments(
     output_dir='./results_formalitytransfer',  # Output directory
-    num_train_epochs=3,                        # Number of training epochs
+    num_train_epochs=6,                        # Number of training epochs
     per_device_train_batch_size=5,             # Batch size for training
     save_steps=10_000,                          # Save checkpoint every 10,000 steps
     save_total_limit=2,                         # Only keep the last 2 checkpoints
