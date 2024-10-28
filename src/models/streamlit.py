@@ -14,7 +14,7 @@ st.title('Formality Transfer')
 # Load the tokenizer and model
 
 my_model = AutoModelForCausalLM.from_pretrained('full_FT_model_changedtokens', use_safetensors=True)
-my_tokenizer = AutoTokenizer.from_pretrained('full_FT_model_changedtokens')
+my_tokenizer = GPT2Tokenizer.from_pretrained('full_FT_model_changedtokens')
 #my_tokenizer.pad_token = '[PAD]'  # Assuming you have defined a padding token
 #my_model.config.pad_token_id = my_tokenizer.pad_token_id
 
