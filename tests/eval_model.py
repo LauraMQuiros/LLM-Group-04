@@ -129,8 +129,8 @@ def main():
     # Give the content-preservation score of the model (BERT score and word overlap)
     # BERT_score = get_BERT_score(model_predictions, data)
     # print(f'The BERT score of the model is: {BERT_score}')
-    # get_word_overlap(model_predictions, data)
-    # print(f'The word overlap of the model is: {content_preservation_score}')
+    # average_word_overlap = get_word_overlap(model_predictions, data)
+    # print(f'The word overlap of the model is: {average_word_overlap}')
 
     # Give the formality of the model (formality score given by the classifier)
 
