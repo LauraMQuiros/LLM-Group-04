@@ -28,7 +28,7 @@ However, for the usage of LoRA you will need to install the package from the sou
 
 To run the tokenisation
 ```bash
-!python src/data_processing/data_preprocessing.py
+!python src/data_processing/loading_tokenization.py
 ```
 This step should fill the folder data/processed with three files: `test_dataset_processed.csv`, `train_dataset_processed.csv` and `val_dataset_processed.csv`.
 
