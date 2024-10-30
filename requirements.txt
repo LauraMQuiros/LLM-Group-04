@@ -7,3 +7,6 @@ transformers==4.45.2
 matplotlib==3.9.2
 keras==3.6.0
 numpy==1.26.4
+nltk == 3.9.1
+tqdm == 4.66.5
+bert_score == 0.3.13

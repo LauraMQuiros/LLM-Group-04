@@ -106,9 +106,7 @@ def tokenizing(tokenizer, data, split):
     # Pickling the tokenized dataset to avoid pre-processing multiple times
 
     with open(os.path.join(save_path, f'{split}.pkl'), 'wb') as f:
-
-   
- 
+        pickle.dump(dataset_processed, f)
 
     return dataset_processed
 
