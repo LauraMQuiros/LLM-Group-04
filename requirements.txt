@@ -7,3 +7,5 @@ transformers==4.45.2
 matplotlib==3.9.2
 keras==3.6.0
 numpy==1.26.4
+pickle==4.0
+json==2.0.9
