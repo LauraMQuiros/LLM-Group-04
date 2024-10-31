@@ -7,3 +7,7 @@ transformers==4.45.2
 matplotlib==3.9.2
 keras==3.6.0
 numpy==1.26.4
+streamlit==1.29.0
+peft==0.13.3.dev0
+fastapi==0.109.0
+tokenizers==0.20.1
