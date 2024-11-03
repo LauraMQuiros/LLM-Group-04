@@ -27,8 +27,8 @@ def establish_data_path():
     path = os.getcwd()
 
     # If you want to run the file specifically from this file path instead of root, uncomment the two lines below
-    # path = os.path.abspath(os.path.join(path, os.pardir))
-    # path = os.path.abspath(os.path.join(path, os.pardir))
+    path = os.path.abspath(os.path.join(path, os.pardir))
+    path = os.path.abspath(os.path.join(path, os.pardir))
     path = os.path.join(path, 'data/raw/GYAFC_Corpus')
     print(path)
     return path
@@ -104,7 +104,7 @@ def tokenizing(tokenizer, data, split):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     # Pickling the tokenized dataset to avoid pre-processing multiple times
-    with open(os.path.join(save_path, f'{split}.pkl'), 'wb') as f:
+    with open(os.path.join(save_path, f'{split}_new.pkl'), 'wb') as f:
         pickle.dump(dataset_processed, f)
 
     return dataset_processed
