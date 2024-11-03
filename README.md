@@ -24,7 +24,7 @@ However, for the usage of LoRA you will need to install the package from the sou
 !pip install -q git+https://github.com/huggingface/peft
 ```
 
-## Running the sections
+## Running the preprocessing
 
 To run the tokenisation
 ```bash
@@ -33,6 +33,25 @@ To run the tokenisation
 This will output three files in the `data/processed` folder: 
 `test.pkl`, `train.pkl`, and `tune.pkl`.
 Besides, we will also save the tokeniser in `models/tokeniser/tokeniser.pkl`.
+
+
+## Running the non-peft finetuning
+
+To run the non-parameter efficient finetuning
+```bash
+!python src/models/finetuning.py
+```
+This will create a folder in `src/models`: 
+`fulldataset_FT_model`, containing the files needed to load in the model and tokeniser.
+
+## Running the LoRA (parameter efficient) finetuning
+
+To run the parameter efficient finetuning, run all cells in this notebook
+```bash
+!python src/models/LoRA_peft_finetuning.ipynb
+```
+This will create three folders in `src/models`: 
+`lora_trained`, `base_model` and `trained_tokenizer` containing the files needed to load in the base model, the finetuned model and tokeniser.
 
 ## Running the streamlit demo
 
