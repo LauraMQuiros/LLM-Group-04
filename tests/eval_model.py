@@ -8,7 +8,7 @@ from nltk.lm import KneserNeyInterpolated
 from nltk.lm.preprocessing import padded_everygram_pipeline
 from nltk.util import ngrams
 from transformers import AutoModelForCausalLM, GPT2Tokenizer
-from peft import PeftModel
+#from peft import PeftModel
 from bert_score import score as BERT_score
 
 def get_model_predictions(model, tokenizer, data):
@@ -102,35 +102,39 @@ def main():
     # Load the model, tokeniser and data from pkl
     path = os.getcwd()
     sys.path.append(path)
-    tokenizer_path = 'src/models/tokenizer'
-    model_path = 'src/models/model'
-    lora_model_path = 'src/models/lora_model'
+    #tokenizer_path = 'src/models/tokenizer'
+    model_path = 'src/models/fulldataset_FT_model'
+    #lora_model_path = 'src/models/lora_model'
     # data path is path + 'src/data/processed/data.pkl'
     data_path = os.path.join(path, 'data/processed/test.pkl')
 
-    lora_tokenizer = GPT2Tokenizer.from_pretrained(tokenizer_path)
-    print(len(lora_tokenizer))
+    tokenizer = GPT2Tokenizer.from_pretrained('src/models/fulldataset_FT_model')
+    #print(len(lora_tokenizer))
     base_model = AutoModelForCausalLM.from_pretrained(model_path, device_map={"": "cpu"})
-    base_model.resize_token_embeddings(len(lora_tokenizer))
+    base_model.resize_token_embeddings(len(tokenizer))
 
     # Load the LoRA model on top of the base model
-    lora_model = PeftModel.from_pretrained(base_model, lora_model_path, device_map={"": "cpu"})
-    lora_model.eval()
+    #lora_model = PeftModel.from_pretrained(base_model, lora_model_path, device_map={"": "cpu"})
+    #lora_model.eval()
 
     with open(data_path, 'rb') as f:
         data = pickle.load(f)
 
-    model_predictions = get_model_predictions(lora_model, lora_tokenizer, data)
+    # small_dataset = {
+    #  'test': data.get_slice(0, 100)
+    #  }
+
+    model_predictions = get_model_predictions(base_model, tokenizer, data)
 
     # Give the fluency of the model (perplexity score with Kneser-Ney smoothing)
     PPL_score = get_perplexity_kneser_ney(model_predictions)
     print(f'The perplexity of the model is: {PPL_score}')
-
+    average_word_overlap = get_word_overlap(model_predictions, data)
+    print(f'The word overlap of the model is: {average_word_overlap}')
     # Give the content-preservation score of the model (BERT score and word overlap)
     # BERT_score = get_BERT_score(model_predictions, data)
     # print(f'The BERT score of the model is: {BERT_score}')
-    # average_word_overlap = get_word_overlap(model_predictions, data)
-    # print(f'The word overlap of the model is: {average_word_overlap}')
+
 
     # Give the formality of the model (formality score given by the classifier)
 
