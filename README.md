@@ -28,10 +28,10 @@ However, for the usage of LoRA you will need to install the package from the sou
 
 To run the tokenisation
 ```bash
-!python src/data_processing/data_preprocessing.py
+!python src/data_processing/loading_tokenization.py
 ```
 This will output three files in the `data/processed` folder: 
-`Entertainment_test.csv`, `Entertainment_train.csv`, and `Entertainment_val.csv`.
+`test.pkl`, `train.pkl`, and `tune.pkl`.
 Besides, we will also save the tokeniser in `models/tokeniser/tokeniser.pkl`.
 
 ## Running the streamlit demo
