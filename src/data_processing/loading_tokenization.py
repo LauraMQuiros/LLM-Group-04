@@ -66,9 +66,6 @@ def mix_music_relationship_datasets(data_music, data_relationships):
     data_conjoined = data_conjoined.sample(frac=1).reset_index(drop=True)
     return data_conjoined
 
-
-
-
 def check_gpu_availability():
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     print(device)
