@@ -60,3 +60,19 @@ To run the streamlit demo
 streamlit run streamlit_demo.py
 ```
 This will open a local server containing the streamlit demo. For more info visit the streamlit forums on https://docs.streamlit.io/
+
+## Running the Formality Classifier
+
+To tun the Formality Classifier
+```bash
+!python src/utils/Formality_Classification.py
+```
+This will import the USE embeddings and then run a cross validation with grid search for the Formality Classifier, while saving the hyper-parameters of the best model
+
+## Running the evaluation of the non-peft model
+
+To tun the evaluation
+```bash
+!python src/tests/eval_model.py
+```
+
