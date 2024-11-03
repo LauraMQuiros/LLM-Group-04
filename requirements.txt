@@ -12,3 +12,4 @@ tqdm == 4.66.5
 bert_score == 0.3.13
 pickle==4.0
 json==2.0.9
+streamlit==1.29.0
