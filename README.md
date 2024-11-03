@@ -33,3 +33,11 @@ To run the tokenisation
 This will output three files in the `data/processed` folder: 
 `Entertainment_test.csv`, `Entertainment_train.csv`, and `Entertainment_val.csv`.
 Besides, we will also save the tokeniser in `models/tokeniser/tokeniser.pkl`.
+
+## Running the streamlit demo
+
+To run the streamlit demo
+```bash
+streamlit run streamlit_demo.py
+```
+This will open a local server containing the streamlit demo. For more info visit the streamlit forums on https://docs.streamlit.io/
