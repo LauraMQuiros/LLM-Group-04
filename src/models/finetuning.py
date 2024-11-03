@@ -39,22 +39,17 @@ with open(tune_path, 'rb') as f:
 with open(train_path, 'rb') as f:
     train: FormalityTransferDataset = pickle.load(f)
 
-small_dataset = {
-     'train': train.get_slice(0, 50),
-     'tune': tune.get_slice(0, 50)
-}
-
 # Define training arguments
 training_args = TrainingArguments(
     output_dir='./results_formalitytransfer',  # Output directory
-    num_train_epochs=6,                        # Number of training epochs
-    per_device_train_batch_size=5,             # Batch size for training
-    save_steps=10_000,                          # Save checkpoint every 10,000 steps
+    num_train_epochs=4,                        # Number of training epochs
+    per_device_train_batch_size=8,             # Batch size for training
+    save_steps=2500,                          # Save checkpoint every 2500 steps
     save_total_limit=2,                         # Only keep the last 2 checkpoints
     logging_dir='./logs',                       # Directory for storing logs
     logging_steps=300,                          # Log every 300 steps
     eval_steps=300,                             # Evaluate every 300 steps
-    evaluation_strategy="steps",                # Evaluate at the end of each step
+    evaluation_strategy="epochs",                # Evaluate at the end of each epoch
 )
 
 # Initialize lists to store loss values
@@ -74,8 +69,8 @@ class LossLoggerCallback(TrainerCallback):
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=small_dataset["train"],
-    eval_dataset=small_dataset["tune"],
+    train_dataset=train,
+    eval_dataset=tune,
     callbacks=[LossLoggerCallback],
     data_collator=data_collator,
 )
@@ -84,8 +79,8 @@ trainer = Trainer(
 trainer.train()
 
 # Save the trained model
-model.save_pretrained(os.path.join(os.getcwd(), 'src/models/fine_tuned_gpt2_formalitytransfer'))
-tokenizer.save_pretrained(os.path.join(os.getcwd(), 'src/models/fine_tuned_gpt2_formalitytransfer'))
+model.save_pretrained(os.path.join(os.getcwd(), 'src/models/fulldataset_FT_model'))
+tokenizer.save_pretrained(os.path.join(os.getcwd(), 'src/models/fulldataset_FT_model'))
 
 #Save loss data
 loss_data = pd.DataFrame({
@@ -98,7 +93,7 @@ loss_data.to_csv(os.path.join(os.getcwd(), 'utils/loss_data.png', index=False)
 plt.figure(figsize=(10, 5))
 plt.plot(training_loss, label='Training Loss')
 plt.plot(validation_loss, label='Validation Loss')
-plt.xlabel('Steps')
+plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.legend()
 plt.title('Training and Validation Loss')
